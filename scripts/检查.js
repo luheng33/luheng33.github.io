@@ -110,13 +110,14 @@ if (THINKING) {
     if (seen.has(p.slug)) fail(`[文章] slug 重复：${p.slug}`);
     seen.add(p.slug);
     if (!fs.existsSync(path.join(root, "content/posts", `${p.slug}.md`))) fail(`[文章] 缺少正文文件 content/posts/${p.slug}.md`);
+    if (!fs.existsSync(path.join(root, "content/posts", `${p.slug}.en.md`))) warnings.push(`[文章] ${p.slug} 没有英文正文 content/posts/${p.slug}.en.md（英文版会显示中文原文并提示）`);
     if (!p.title) fail(`[文章] ${p.slug} 没有标题`);
     if (p.date && !/^\d{4}-\d{2}-\d{2}$/.test(p.date)) fail(`[文章] ${p.slug} 的日期格式应为 YYYY-MM-DD：${p.date}`);
     for (const t of p.tags || []) if (!tagIds.has(t)) fail(`[文章] ${p.slug} 用了未定义的标签「${t}」`);
   }
   // 反向：有 .md 但没登记的
   const dir = path.join(root, "content/posts");
-  if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir)) if (f.endsWith(".md") && !seen.has(f.slice(0, -3))) warnings.push(`[文章] content/posts/${f} 没有在 thinking.js 里登记，不会显示`);
+  if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir)) if (f.endsWith(".md") && !seen.has(f.replace(/.en.md$|.md$/, ""))) warnings.push(`[文章] content/posts/${f} 没有在 thinking.js 里登记，不会显示`);
 }
 if (PRODUCTS) for (const p of PRODUCTS.items || []) {
   if (!/^[a-z0-9-]+$/.test(p.id || "")) fail(`[产品] id「${p.id}」不合法`);

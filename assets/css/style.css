@@ -88,7 +88,14 @@ img { max-width: 100%; }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
 .nav-brand { font-size: 17px; font-weight: 700; color: var(--heading); letter-spacing: .06em; }
 .nav-brand:hover { color: var(--accent); text-decoration: none; }
+.nav-right { display: flex; align-items: center; gap: 6px; }
 .nav-menu { display: flex; gap: 6px; }
+.lang-switch {
+  margin-left: 8px; padding: 3px 11px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px; font-weight: 600; letter-spacing: .04em; color: var(--text); background: var(--card);
+  transition: border-color .15s ease, color .15s ease;
+}
+.lang-switch:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
 .nav-link {
   position: relative; display: flex; align-items: center; height: 60px; padding: 0 12px;
   color: var(--text); font-size: 15px;
@@ -96,7 +103,7 @@ img { max-width: 100%; }
 .nav-link:hover { color: var(--accent); text-decoration: none; }
 .nav-link.active { color: var(--heading); font-weight: 600; }
 .nav-link.active::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; background: var(--accent); }
-.nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 6px; }
+.nav-toggle { display: none; margin-left: 4px; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 6px; }
 .nav-toggle span { width: 22px; height: 2px; background: var(--heading); border-radius: 2px; }
 
 /* 3. 首页顶部 -------------------------------------------------------------- */
@@ -114,9 +121,10 @@ img { max-width: 100%; }
 }
 .hero-text h1 { margin: 0; font-size: 46px; font-weight: 800; line-height: 1.15; letter-spacing: .04em; color: var(--heading); }
 .hero-en { display: block; margin-top: 6px; font-family: var(--font-latin); font-style: italic; font-size: 22px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
+.hero-en[lang="zh-CN"] { font-style: normal; font-family: var(--font-sans); letter-spacing: .08em; font-size: 20px; }
 .hero-role { margin: 24px 0 0; font-size: 18px; font-weight: 600; color: var(--heading); }
-.hero-affil { margin: 2px 0 0; color: var(--muted); }
-.hero-tagline { margin: 18px 0 26px; max-width: 34em; font-size: 16.5px; }
+.hero-affils { margin: 4px 0 24px; }
+.hero-affil { margin: 0; color: var(--muted); }
 .hero-links { display: flex; flex-wrap: wrap; gap: 10px; }
 .hero-link {
   display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px;
@@ -132,6 +140,7 @@ img { max-width: 100%; }
 .block { padding: 52px 0 56px; border-top: 1px solid var(--border); }
 .block-grid { display: grid; grid-template-columns: 168px minmax(0, 1fr); column-gap: 48px; }
 .section-title { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.3; letter-spacing: .03em; color: var(--heading); }
+.section-sub:empty { display: none; }
 .section-sub { margin: 4px 0 0; font-family: var(--font-latin); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .view-all { display: inline-block; margin-top: 16px; font-size: 14px; font-weight: 600; }
 

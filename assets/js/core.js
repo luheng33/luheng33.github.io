@@ -27,16 +27,60 @@
     return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
   };
 
+  /* 2. 语言 ----------------------------------------------------
+     选哪种语言，按优先级：网址 ?lang=en / ?lang=zh → 上次的选择（localStorage）→ 浏览器语言（zh 开头用中文，其他用英文）。
+     内容文件里的文字可以写成 { zh: '…', en: '…' }，Core.t() 取出当前语言那一份。 */
+  function storedLang() { try { return localStorage.getItem('lang') || ''; } catch (e) { return ''; } }
+  function storeLang(l) { try { localStorage.setItem('lang', l); } catch (e) { /* 隐私模式等：不记住也不影响使用 */ } }
+  var LANG = (function () {
+    var q = Core.queryParam('lang');
+    if (q === 'zh' || q === 'en') { storeLang(q); return q; }
+    var s = storedLang();
+    if (s === 'zh' || s === 'en') return s;
+    return /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
+  })();
+  Core.lang = LANG;
+  document.documentElement.lang = LANG === 'en' ? 'en' : 'zh-CN';
+
+  // {zh, en} → 当前语言那份（缺的一边退回另一边）；普通字符串、数组等原样返回
+  Core.t = function (v) {
+    if (v && typeof v === 'object' && !Array.isArray(v) && ('zh' in v || 'en' in v)) {
+      var x = v[LANG];
+      return x != null ? x : (v[LANG === 'zh' ? 'en' : 'zh'] != null ? v[LANG === 'zh' ? 'en' : 'zh'] : '');
+    }
+    return v;
+  };
+  // 界面文字：Core.ui('键名', { 占位符: 值 })。值由调用方负责转义
+  Core.ui = function (key, vars) {
+    var def = window.SITE && SITE.ui && SITE.ui[key];
+    return String(def == null ? '' : Core.t(def)).replace(/\{(\w+)\}/g, function (m, k) { return vars && k in vars ? vars[k] : m; });
+  };
+  // 把静态 HTML 里带 data-i18n="键名" 的元素填上当前语言的界面文字
+  Core.applyI18n = function () {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (el) {
+      var key = el.getAttribute('data-i18n');
+      if (window.SITE && SITE.ui && SITE.ui[key] != null) el.textContent = Core.ui(key);
+    });
+  };
+  // 当前页换成另一种语言的网址（保留其他参数和 # 部分），例如 "?id=hoi&lang=en#x"
+  Core.langUrl = function (l) {
+    var u = new URL(window.location.href);
+    u.searchParams.set('lang', l);
+    return u.search + u.hash;
+  };
+
   /* 3. 工具 ---------------------------------------------------- */
   Core.esc = function (s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   };
-  // '2026-11-16' → '2026 年 11 月 16 日'；'2026-11' → '2026 年 11 月'
+  // '2026-11-16' → '2026 年 11 月 16 日'（英文：'Nov 16, 2026'）；'2026-11' → '2026 年 11 月'（'Nov 2026'）
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   Core.fmtDate = function (s) {
     var m = /^(\d{4})-(\d{2})(?:-(\d{2}))?/.exec(String(s || ''));
     if (!m) return s ? String(s) : '';
+    if (LANG === 'en') return (MONTHS[parseInt(m[2], 10) - 1] || m[2]) + (m[3] ? ' ' + parseInt(m[3], 10) + ',' : '') + ' ' + m[1];
     return m[1] + ' 年 ' + parseInt(m[2], 10) + ' 月' + (m[3] ? ' ' + parseInt(m[3], 10) + ' 日' : '');
   };
   // 列表里用的紧凑写法：'2026-11-16' → '2026.11.16'
@@ -65,12 +109,12 @@
   Core.feedbackHtml = function (postTitle) {
     var email = (window.PROFILE && PROFILE.email) || '';
     if (!email) return '';
-    var href = 'mailto:' + email + '?subject=' + encodeURIComponent('关于《' + postTitle + '》');
-    return '<aside class="feedback"><p>这篇还在想，欢迎来信讨论、指出问题。</p>' +
+    var href = 'mailto:' + email + '?subject=' + encodeURIComponent(Core.ui('feedbackSubject', { title: postTitle }));
+    return '<aside class="feedback"><p>' + Core.ui('feedback') + '</p>' +
       '<p><a href="' + Core.esc(href) + '">' + Core.esc(email) + '</a></p></aside>';
   };
   Core.setTitle = function (name) {
-    var suffix = (window.SITE && SITE.titleSuffix) || '';
+    var suffix = Core.t(window.SITE && SITE.titleSuffix) || '';
     document.title = name ? name + (suffix ? ' · ' + suffix : '') : suffix;
   };
 
@@ -81,26 +125,33 @@
     var el = document.getElementById('site-header');
     if (!el || !window.SITE) return;
     var current = NAV_GROUP[document.body.getAttribute('data-page') || ''] || '';
-    var brand = (window.PROFILE && PROFILE.name) || SITE.titleSuffix || '';
+    var brand = Core.t(window.PROFILE && PROFILE.name) || Core.t(SITE.titleSuffix) || '';
     var links = SITE.nav.map(function (item) {
-      return '<a class="nav-link' + (item.page === current ? ' active' : '') + '" href="' + Core.page(item.page) + '">' + Core.esc(item.label) + '</a>';
+      return '<a class="nav-link' + (item.page === current ? ' active' : '') + '" href="' + Core.page(item.page) + '">' + Core.esc(Core.t(item.label)) + '</a>';
     }).join('');
+    var other = LANG === 'en' ? 'zh' : 'en';
     el.innerHTML =
       '<header class="nav"><div class="container nav-inner">' +
         '<a class="nav-brand" href="' + (ROOT || './') + 'index.html">' + Core.esc(brand) + '</a>' +
-        '<button class="nav-toggle" id="nav-toggle" aria-label="展开导航" aria-expanded="false"><span></span><span></span><span></span></button>' +
-        '<nav class="nav-menu" id="nav-menu">' + links + '</nav>' +
+        '<div class="nav-right">' +
+          '<nav class="nav-menu" id="nav-menu">' + links + '</nav>' +
+          '<a class="lang-switch" id="lang-switch" href="' + Core.esc(Core.langUrl(other)) + '" hreflang="' + (other === 'en' ? 'en' : 'zh-CN') + '" title="' + Core.esc(Core.ui('switchLang')) + '">' + (other === 'en' ? 'EN' : '中文') + '</a>' +
+          '<button class="nav-toggle" id="nav-toggle" aria-label="' + Core.esc(Core.ui('navOpen')) + '" aria-expanded="false"><span></span><span></span><span></span></button>' +
+        '</div>' +
       '</div></header>';
     var toggle = document.getElementById('nav-toggle'), menu = document.getElementById('nav-menu');
     toggle.addEventListener('click', function () {
       toggle.setAttribute('aria-expanded', menu.classList.toggle('open'));
     });
+    // 点击时记住选择，并按「此刻」的网址重算链接（思考页筛选主题后 # 部分会变）
+    var sw = document.getElementById('lang-switch');
+    sw.addEventListener('click', function () { storeLang(other); sw.setAttribute('href', Core.langUrl(other)); });
   }
 
   function renderFooter() {
     var el = document.getElementById('site-footer');
     if (!el) return;
-    var name = (window.PROFILE && PROFILE.name) || '';
+    var name = Core.t(window.PROFILE && PROFILE.name) || '';
     var email = (window.PROFILE && PROFILE.email) || '';
     el.innerHTML = '<footer class="footer"><div class="container"><p>© ' + new Date().getFullYear() + ' ' + Core.esc(name) +
       (email ? ' · <a href="mailto:' + Core.esc(email) + '">' + Core.esc(email) + '</a>' : '') + '</p></div></footer>';
@@ -169,18 +220,30 @@
     return out.join('\n');
   };
 
-  Core.renderMarkdownFile = function (path, el) {
+  function fetchText(path) {
     return fetch(ROOT + path, { cache: 'no-cache' })
-      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-      .then(function (md) { el.innerHTML = Core.markdown(md); })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); });
+  }
+  // 读一个 .md 渲染进 el。fallbackPath（可选）：path 读不到时改读它，并在正文前加一句「暂无英文版」的提示
+  Core.renderMarkdownFile = function (path, el, fallbackPath) {
+    var notice = '';
+    return fetchText(path)
+      .catch(function (err) {
+        if (!fallbackPath) throw err;
+        path = fallbackPath;
+        notice = '<div class="notice">' + Core.ui('noEnglish') + '</div>';
+        return fetchText(fallbackPath);
+      })
+      .then(function (md) { el.innerHTML = notice + Core.markdown(md); })
       .catch(function (err) {
         var isFile = window.location.protocol === 'file:';
         el.innerHTML = '<div class="notice">' + (isFile
-          ? '文章正文是从 Markdown 文件读取的，浏览器不允许直接双击打开本地网页时读取它。请用 <code>预览.ps1</code> 启动本地预览。上线到 GitHub Pages 后不受影响。'
-          : '读不到 <code>' + Core.esc(path) + '</code>（' + Core.esc(err.message) + '），请检查文件是否存在、名字是否与 slug 一致。') + '</div>';
+          ? Core.ui('mdFileProtocol')
+          : Core.ui('mdReadFail', { path: Core.esc(path), err: Core.esc(err.message) })) + '</div>';
       });
   };
 
   renderHeader();
   renderFooter();
+  Core.applyI18n();
 })();
