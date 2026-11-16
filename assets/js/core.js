@@ -6,7 +6,6 @@
      2. 注入导航栏与页脚
      3. 工具：HTML 转义、日期、图标、标签
      4. 一个够用的小型 Markdown 渲染器（不依赖任何外部库）
-     5. 横向滑轨的鼠标拖动
    不引用任何外部 CDN：访问者在国内，外部脚本可能加载失败，页面不应因此坏掉。
    ============================================================ */
 (function () {
@@ -40,6 +39,11 @@
     if (!m) return s ? String(s) : '';
     return m[1] + ' 年 ' + parseInt(m[2], 10) + ' 月' + (m[3] ? ' ' + parseInt(m[3], 10) + ' 日' : '');
   };
+  // 列表里用的紧凑写法：'2026-11-16' → '2026.11.16'
+  Core.fmtDateShort = function (s) {
+    var m = /^(\d{4})-(\d{2})(?:-(\d{2}))?/.exec(String(s || ''));
+    return m ? m[1] + '.' + m[2] + (m[3] ? '.' + m[3] : '') : (s ? String(s) : '');
+  };
 
   var ICONS = {
     email:  '<path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>',
@@ -56,6 +60,14 @@
     return href
       ? '<a class="' + cls + '" href="' + Core.esc(href) + '">' + Core.esc(label) + '</a>'
       : '<span class="' + cls + '">' + Core.esc(label) + '</span>';
+  };
+  // 文章末尾的「欢迎来信」：没有设置公开邮箱（profile.js 的 email 为空）就什么都不显示。邮件主题自动带上文章标题
+  Core.feedbackHtml = function (postTitle) {
+    var email = (window.PROFILE && PROFILE.email) || '';
+    if (!email) return '';
+    var href = 'mailto:' + email + '?subject=' + encodeURIComponent('关于《' + postTitle + '》');
+    return '<aside class="feedback"><p>这篇还在想，欢迎来信讨论、指出问题。</p>' +
+      '<p><a href="' + Core.esc(href) + '">' + Core.esc(email) + '</a></p></aside>';
   };
   Core.setTitle = function (name) {
     var suffix = (window.SITE && SITE.titleSuffix) || '';
@@ -167,20 +179,6 @@
           ? '文章正文是从 Markdown 文件读取的，浏览器不允许直接双击打开本地网页时读取它。请用 <code>预览.ps1</code> 启动本地预览。上线到 GitHub Pages 后不受影响。'
           : '读不到 <code>' + Core.esc(path) + '</code>（' + Core.esc(err.message) + '），请检查文件是否存在、名字是否与 slug 一致。') + '</div>';
       });
-  };
-
-  /* 5. 横向滑轨：按住鼠标拖动 ----------------------------------- */
-  Core.enableDragScroll = function (el) {
-    var down = false, startX = 0, startLeft = 0, moved = false;
-    el.addEventListener('mousedown', function (e) { down = true; moved = false; startX = e.pageX; startLeft = el.scrollLeft; el.classList.add('dragging'); });
-    window.addEventListener('mousemove', function (e) {
-      if (!down) return;
-      var dx = e.pageX - startX;
-      if (Math.abs(dx) > 4) moved = true;
-      if (moved) { e.preventDefault(); el.scrollLeft = startLeft - dx; }
-    });
-    window.addEventListener('mouseup', function () { down = false; el.classList.remove('dragging'); });
-    el.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
   };
 
   renderHeader();

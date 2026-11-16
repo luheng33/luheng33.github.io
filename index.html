@@ -8,16 +8,16 @@
   <!-- 草稿期间不让搜索引擎收录。定稿、想被搜到时，删掉下面这一行 -->
   <meta name="robots" content="noindex">
   <title>鲁一恒 | 经济学博士研究生</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%232563eb'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23ffffff'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%238c2f39'/%3E%3Ccircle cx='16' cy='16' r='5' fill='%23ffffff'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
 <!-- ============================================================
      首页：只是一个"壳"，没有内容文字。要改内容请编辑：
        content/profile.js   姓名 / 简介 / 教育 / 链接
-       content/products.js  产品
        content/publications.js  论文
        content/thinking.js  思考
+       content/products.js  产品
      data-page="home"：告诉 pages.js 按首页渲染；data-root=""：本文件在仓库根目录
      ============================================================ -->
 <body data-page="home" data-root="">
@@ -28,42 +28,51 @@
     <div class="container hero-inner" id="hero"></div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      <h2 class="section-title">关于</h2>
-      <div id="bio"></div>
-      <h3 class="sub-title">教育经历</h3>
-      <div class="edu-list" id="education"></div>
-    </div>
-  </section>
-
-  <section class="section section-alt">
-    <div class="container">
-      <div class="section-title-row">
-        <h2 class="section-title">产品</h2>
-        <a class="view-all" href="pages/products.html">全部 →</a>
+  <!-- 每个区块：左边小标题 + 右边内容（手机上叠成一栏）。调整区块顺序 = 调整下面 section 的先后 -->
+  <section class="block">
+    <div class="container block-grid">
+      <div class="block-head">
+        <h2 class="section-title">关于</h2>
+        <p class="section-sub">About</p>
       </div>
-      <div class="hscroll" id="product-cards"></div>
+      <div class="block-body">
+        <div id="bio"></div>
+        <h3 class="sub-title">教育经历</h3>
+        <div class="edu-list" id="education"></div>
+      </div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="section-title-row">
+  <section class="block">
+    <div class="container block-grid">
+      <div class="block-head">
         <h2 class="section-title">论文</h2>
+        <p class="section-sub">Publications</p>
         <a class="view-all" href="pages/publications.html">全部 →</a>
       </div>
-      <ol class="pub-list" id="pub-preview"></ol>
+      <ol class="block-body pub-list" id="pub-preview"></ol>
     </div>
   </section>
 
-  <section class="section section-alt">
-    <div class="container">
-      <div class="section-title-row">
+  <section class="block">
+    <div class="container block-grid">
+      <div class="block-head">
         <h2 class="section-title">思考</h2>
+        <p class="section-sub">Thinking</p>
         <a class="view-all" href="pages/thinking.html">全部 →</a>
       </div>
-      <div class="hscroll" id="thinking-cards"></div>
+      <div class="block-body thread-list" id="thinking-list"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container block-grid">
+      <div class="block-head">
+        <h2 class="section-title">产品</h2>
+        <p class="section-sub">Tools</p>
+        <a class="view-all" href="pages/products.html">全部 →</a>
+      </div>
+      <div class="block-body cards" id="product-cards"></div>
     </div>
   </section>
 

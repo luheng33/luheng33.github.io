@@ -9,11 +9,12 @@ var SITE = {
 
   /* 顶部导航：label 为显示文字，page 对应 pages/ 下的文件名（不含 .html）。调整顺序就是调整数组顺序 */
   nav: [
-    { label: '产品',     page: 'products' },
     { label: '论文',     page: 'publications' },
-    { label: '思考',     page: 'thinking' }
+    { label: '思考',     page: 'thinking' },
+    { label: '产品',     page: 'products' }
   ],
 
-  /* 首页「思考」区块最多显示几篇最新文章 */
+  /* 首页「论文」「思考」区块最多各显示几条 */
+  homePubCount: 5,
   homeThinkingCount: 6
 };

@@ -19,15 +19,15 @@ var PROFILE = {
 
   /* 照片：留空 '' 则显示姓名首字的占位头像。放照片：把图片放到 assets/images/，这里写 'assets/images/photo.jpg'。
      ★ 公开仓库里的照片等于公开，想清楚再放。 */
-  photo: '',
+  photo: 'assets/images/photo.jpg',
 
-  /* 公开邮箱：留空 '' 则页脚和按钮都不显示。 */
-  email: '',
+  /* 公开邮箱：留空 '' 则页脚和每篇「思考」末尾的「欢迎来信」都不显示。 */
+  email: 'luheng334266@gmail.com',
 
   /* 联系方式 / 外部链接按钮。icon 可选：email / github / scholar / orcid / link。不需要的删掉。 */
   links: [
+    { label: '邮箱', icon: 'email', url: 'mailto:luheng334266@gmail.com' },
     { label: 'GitHub', icon: 'github', url: 'https://github.com/luheng33' }
-    // { label: '邮箱', icon: 'email', url: 'mailto:you@example.com' },
   ],
 
   /* 自我介绍（每个元素一段，第一段用大字） */

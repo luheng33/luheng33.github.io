@@ -25,10 +25,10 @@
 
 | 想做什么 | 改哪里 |
 |---|---|
-| 改姓名、简介、教育经历、联系方式、照片 | `content/profile.js` |
+| 改姓名、简介、教育经历、联系方式、照片 | `content/profile.js`（照片放 `assets/images/photo.jpg`，4:5 竖图、几十 KB；**放之前先去掉 EXIF/GPS**，原图留在 `私人笔记/原图/`） |
 | 加/改一个产品 | `content/products.js` |
-| 加/改一篇论文 | `content/publications.js` |
-| 写一篇「思考」 | ① `content/thinking.js` 的 `posts` **最前面**加一项；② 新建 `content/posts/<slug>.md` 写正文 |
+| 加/改一篇论文 | `content/publications.js`（`status` 填 `published` 已发表 / `submitted` 在投 / `in-prep` 撰写中；论文页按这三组显示，在投的只放标题和作者） |
+| 写一篇「思考」 | ① `content/thinking.js` 的 `posts` **最前面**加一项；② 新建 `content/posts/<slug>.md` 写正文。还没写完的加 `draft: true`，列表上会显示「写作中」，写完删掉这一行 |
 | 加一个「思考」分组 | `content/thinking.js` 的 `tags` 里加一行 |
 | 改顶部导航 | `content/site.js` 的 `nav` |
 | 整体换配色 | `assets/css/style.css` 第 1 节 `:root` 的变量 |
@@ -37,7 +37,7 @@
 
 ```js
 // content/thinking.js，posts 数组最前面加
-{ slug: 'ai-markup', title: '标题', summary: '一两句摘要', date: '2026-12-01', tags: ['ai-economics'] },
+{ slug: 'ai-markup', title: '标题', summary: '一两句摘要', date: '2026-12-01', tags: ['ai-economics'], draft: true },
 ```
 然后新建 `content/posts/ai-markup.md`，用 Markdown 写正文（支持标题、列表、引用、表格、代码、链接、图片）。
 `slug` 只能用小写字母、数字、短横线，发布后不要再改（链接会失效）。
@@ -61,7 +61,8 @@
 - **不依赖任何外部 CDN。** 访问者在国内，外部脚本可能加载失败，页面不应因此坏掉。所以 Markdown 渲染是自己写的小渲染器（`assets/js/core.js`），只支持常用语法，**不支持数学公式和内嵌 HTML**（内嵌 HTML 会被转义显示，防止文章里的内容变成脚本）。
 - **没有评论区、没有自动日期。** 日期手写在 `thinking.js`。
 - 深色模式跟随系统。
-- 视觉风格参考了一个公开的学术个人主页（白底、深藏青标题、蓝色强调、圆角卡片、横向滑轨）；**代码是为本站重新写的**，没有复制对方的文件。
+- 视觉风格：学术期刊式排版——暖白纸色、墨色正文、一个酒红强调色，用细线分隔而不是阴影和卡片；首页每个区块是「左边小标题 + 右边内容」，手机上叠成一栏。字体只用系统字体，不引外部字体。想换色改 `style.css` 第 1 节的变量。
+- 首页区块顺序是 关于 → 论文 → 思考 → 产品，改顺序就是调换 `index.html` 里 `<section class="block">` 的先后（导航顺序在 `content/site.js`）。
 
 ## 第一次上线的步骤（尚未完成）
 

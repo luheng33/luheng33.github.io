@@ -27,11 +27,16 @@ const PROBE = `(() => { const de = document.documentElement, q = s => document.q
   return JSON.stringify({ innerWidth, scrollWidth: de.scrollWidth, overflowX: de.scrollWidth > innerWidth + 1,
     title: document.title, navLinks: document.querySelectorAll(".nav-link").length, h1: (q("h1")||{}).textContent || "",
     bodyTextLen: document.body.innerText.length, sections: [...document.querySelectorAll(".section-title")].map(x => x.textContent),
-    cards: document.querySelectorAll(".slide-card").length, pubs: document.querySelectorAll(".pub").length,
+    cards: document.querySelectorAll(".card").length, pubs: document.querySelectorAll(".pub").length,
+    subTitles: [...document.querySelectorAll(".sub-title")].map(x => x.textContent), drafts: document.querySelectorAll(".tag-amber").length,
     threads: document.querySelectorAll(".thread").length, chips: document.querySelectorAll(".chip").length,
     prose: (q(".prose")||{}).innerText ? q(".prose").innerText.slice(0, 40) : "", notice: (q(".notice")||{}).textContent || "",
-    avatar: !!q(".avatar"), tables: document.querySelectorAll(".prose table").length, lis: document.querySelectorAll(".prose ol li").length,
-    quotes: document.querySelectorAll(".prose blockquote").length }); })()`;
+    feedbackShown: !!q(".feedback"),
+    // 临时给 PROFILE 设个邮箱，检查「欢迎来信」生成的链接（测完还原，不影响页面）
+    feedback: (typeof Core !== "undefined") ? (e => { const old = PROFILE.email; PROFILE.email = "you@example.com"; const on = Core.feedbackHtml("T 题"); PROFILE.email = ""; const off = Core.feedbackHtml("T"); PROFILE.email = old; return { on, off }; })() : null,
+    avatar: !!q(".avatar"), photoOk: !!q(".hero-photo img") && q(".hero-photo img").complete && q(".hero-photo img").naturalWidth > 0, tables: document.querySelectorAll(".prose table").length, lis: document.querySelectorAll(".prose ol li").length,
+    quotes: document.querySelectorAll(".prose blockquote").length,
+    md: (typeof Core !== "undefined") ? (h => ({ tables: (h.match(/<table/g) || []).length, lis: (h.match(/<li>/g) || []).length, quotes: (h.match(/<blockquote/g) || []).length, bold: (h.match(/<strong>/g) || []).length }))(Core.markdown(["| a | b |", "| --- | --- |", "| 1 | 2 |", "", "1. x", "2. y", "3. z", "", "> q", "", "**b**"].join(String.fromCharCode(10)))) : null }); })()`;
 
 const results = [];
 function check(name, ok, detail) { results.push(ok); console.log(`${ok ? "通过" : "失败"}  ${name}${ok ? "" : "   <-- " + (detail || "")}`); }
@@ -66,7 +71,7 @@ async function run(port) {
 
     const pages = [
       ["/index.html", "首页"], ["/pages/products.html", "产品页"], ["/pages/publications.html", "论文页"],
-      ["/pages/thinking.html", "思考列表页"], ["/pages/post.html?id=welcome", "文章页"], ["/pages/post.html?id=no-such-post", "不存在的文章"],
+      ["/pages/thinking.html", "思考列表页"], ["/pages/post.html?id=generative-ai-cocoon", "文章页"], ["/pages/post.html?id=no-such-post", "不存在的文章"],
     ];
     for (const width of [1200, 390]) {
       console.log(`\n== 宽度 ${width}px ==`);
@@ -78,15 +83,21 @@ async function run(port) {
         // 它有自己的断言（下面：友好提示、不白屏）。其他页面的门槛不变。
         if (label !== "不存在的文章") check(`${label}：有内容（文字 > 70 字）`, i.bodyTextLen > 70, `只有 ${i.bodyTextLen} 字`);
         if (label === "首页") {
-          check("首页：关于 / 产品 / 论文 / 思考 四个区块都在，且思考在最后", JSON.stringify(i.sections) === JSON.stringify(["关于", "产品", "论文", "思考"]), JSON.stringify(i.sections));
-          check("首页：没有照片时显示占位头像", i.avatar);
-          check("首页：产品卡 + 思考卡共 2 张", i.cards === 2, `cards=${i.cards}`);
-          check("首页：论文预览 2 篇（工作论文默认不公开）", i.pubs === 2, `pubs=${i.pubs}`);
+          check("首页：关于 / 论文 / 思考 / 产品 四个区块按这个顺序", JSON.stringify(i.sections) === JSON.stringify(["关于", "论文", "思考", "产品"]), JSON.stringify(i.sections));
+          check("首页：照片真的加载出来了（不是占位头像、不是裂图）", i.photoOk && !i.avatar, JSON.stringify({ photoOk: i.photoOk, avatar: i.avatar }));
+          check("首页：产品 1 张卡、思考 5 篇", i.cards === 1 && i.threads === 5, `cards=${i.cards} threads=${i.threads}`);
+          check("首页：论文预览 2 篇（1 已发表 + 1 在投）", i.pubs === 2, `pubs=${i.pubs}`);
           check("首页：导航 3 项", i.navLinks === 3, `navLinks=${i.navLinks}`);
         }
-        if (label === "论文页") check("论文页：只显示 2 篇已发表", i.pubs === 2, `pubs=${i.pubs}`);
-        if (label === "思考列表页") check("思考页：1 篇文章 + 筛选条（全部 + 2 个主题）", i.threads === 1 && i.chips === 3, `threads=${i.threads} chips=${i.chips}`);
-        if (label === "文章页") check("文章页：Markdown 正文渲染出来（有表格、列表、引用，没有报错提示框）", i.tables === 1 && i.lis === 3 && i.quotes === 1 && !i.notice, JSON.stringify({ t: i.tables, l: i.lis, q: i.quotes, n: i.notice }));
+        if (label === "论文页") check("论文页：2 篇，分成「已发表」「在投」两组", i.pubs === 2 && JSON.stringify(i.subTitles) === JSON.stringify(["已发表", "在投"]), JSON.stringify({ p: i.pubs, g: i.subTitles }));
+        if (label === "思考列表页") check("思考页：5 篇文章 + 筛选条（全部 + 2 个主题）", i.threads === 5 && i.chips === 3, `threads=${i.threads} chips=${i.chips}`);
+        if (label === "文章页") {
+          check("文章页：正文真的读到并渲染出来（有引用块和粗体，没有报错提示框）", i.quotes === 1 && !i.notice && /问题/.test(i.prose), JSON.stringify({ q: i.quotes, n: i.notice, prose: i.prose }));
+          check("文章页：草稿显示「写作中」标签", i.drafts >= 1, `drafts=${i.drafts}`);
+          check("文章页：设了公开邮箱就显示「欢迎来信」；清空邮箱则不显示；链接带文章标题", i.feedbackShown && i.feedback.off === "" && i.feedback.on.includes("mailto:you@example.com?subject=") && i.feedback.on.includes(encodeURIComponent("T 题")), JSON.stringify(i.feedback));
+          // 内置 Markdown 渲染器的回归检查：表格 / 有序列表 / 引用 / 粗体
+          check("Markdown 渲染器：表格、列表、引用、粗体都能渲染", i.md && i.md.tables === 1 && i.md.lis === 3 && i.md.quotes === 1 && i.md.bold === 1, JSON.stringify(i.md));
+        }
         if (label === "不存在的文章") check("不存在的文章：友好提示，不白屏", /没有找到/.test(i.h1) && !!i.notice, i.h1);
       }
     }
