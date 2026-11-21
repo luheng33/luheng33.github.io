@@ -46,26 +46,22 @@ var PROFILE = {
     ]
   },
 
-  /* 教育经历（最新在前）。advisors 是指导老师（可选），前面的「指导老师：」由 site.js 的 ui.advisors 提供。
-     ★ 英文里老师的姓名我按拼音写的（名在前、姓在后），请核对他们自己惯用的英文写法。 */
+  /* 教育经历（最新在前） */
   education: [
     {
       period: { zh: '2024.9 – 至今', en: '2024.9 – present' },
       degree: { zh: '经济学博士（数量经济学）', en: 'Ph.D. in Economics (Quantitative Economics)' },
-      advisors: { zh: '蔡跃洲、钟洲', en: 'Yuezhou Cai, Zhou Zhong' },
       detail: { zh: '中国社会科学院大学 · 中国社会科学院数量经济与技术经济研究所',
                 en: 'University of Chinese Academy of Social Sciences · Institute of Quantitative and Technological Economics, CASS' }
     },
     {
       period: { zh: '2021.9 – 2024.6', en: '2021.9 – 2024.6' },
       degree: { zh: '经济学硕士（政治经济学）', en: 'Master of Economics (Political Economy)' },
-      advisors: { zh: '陈再齐、宋宗宏', en: 'Zaiqi Chen, Zonghong Song' },
       detail: { zh: '广东省社会科学院 经济学部', en: 'Department of Economics, Guangdong Academy of Social Sciences' }
     },
     {
       period: { zh: '2017.9 – 2021.6', en: '2017.9 – 2021.6' },
       degree: { zh: '经济学学士、理学学士（数学与经济学双学位）', en: 'Bachelor of Economics and Bachelor of Science (double degree in Mathematics and Economics)' },
-      advisors: { zh: '胡霞、江艇', en: 'Xia Hu, Ting Jiang' },
       detail: { zh: '中国人民大学 信息学院', en: 'School of Information, Renmin University of China' }
     }
   ]

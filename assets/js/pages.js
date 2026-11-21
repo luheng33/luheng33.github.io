@@ -99,8 +99,7 @@
     $('bio').innerHTML = (t(P.bio) || []).map(function (s, i) { return '<p' + (i === 0 ? ' class="lead"' : '') + '>' + s + '</p>'; }).join('');
     $('education').innerHTML = (P.education || []).map(function (e) {
       return '<div class="edu-item"><div class="edu-date">' + esc(t(e.period)) + '</div>' +
-        '<div class="edu-body"><strong>' + esc(t(e.degree)) + '</strong><p>' + esc(t(e.detail)) + '</p>' +
-        (e.advisors ? '<p>' + esc(ui('advisors')) + esc(t(e.advisors)) + '</p>' : '') + '</div></div>';
+        '<div class="edu-body"><strong>' + esc(t(e.degree)) + '</strong><p>' + esc(t(e.detail)) + '</p>' + '</div></div>';
     }).join('');
 
     // 论文：首页放已发表 + 在投（撰写中的只在论文页），已发表在前

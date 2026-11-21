@@ -28,7 +28,7 @@ const PROBE = `(() => { const de = document.documentElement, q = s => document.q
     title: document.title, htmlLang: document.documentElement.lang,
     switchText: (q("#lang-switch")||{}).textContent || "", switchHref: (q("#lang-switch")||{}).getAttribute ? (q("#lang-switch")||{getAttribute(){return ""}}).getAttribute("href") : "",
     navText: [...document.querySelectorAll(".nav-link")].map(x => x.textContent), affils: document.querySelectorAll(".hero-affil").length,
-    advisors: [...document.querySelectorAll(".edu-body p")].filter(x => /指导老师|Advisors/.test(x.textContent)).map(x => x.textContent),
+    eduItems: document.querySelectorAll(".edu-item").length, advisorText: /指导老师|Advisors/.test((q("#education")||{}).textContent || ""),
     heroEn: (q(".hero-en")||{}).textContent || "", postMeta: (q("#post-meta")||{}).textContent || "", chipText: [...document.querySelectorAll(".chip")].map(x => x.firstChild.textContent),
     pubStatuses: [...document.querySelectorAll(".pub-status")].map(x => x.textContent), bioText: (q("#bio")||{}).textContent || "", navLinks: document.querySelectorAll(".nav-link").length, h1: (q("h1")||{}).textContent || "",
     bodyTextLen: document.body.innerText.length, sections: [...document.querySelectorAll(".section-title")].map(x => x.textContent),
@@ -112,14 +112,14 @@ async function run(port) {
     console.log("\n== 英文版与语言切换 ==");
     const zh = await inspect("/index.html", 1200, "zh");
     check("中文首页：html lang=zh-CN，按钮显示 EN 且指向 ?lang=en", zh.htmlLang === "zh-CN" && zh.switchText === "EN" && /lang=en/.test(zh.switchHref), JSON.stringify([zh.htmlLang, zh.switchText, zh.switchHref]));
-    check("中文首页：单位两行并列；三段学历都有「指导老师：」", zh.affils === 2 && zh.advisors.length === 3 && zh.advisors.every((x) => /^指导老师：/.test(x)), JSON.stringify([zh.affils, zh.advisors]));
+    check("中文首页：单位两行并列；三段学历，且不再有指导老师", zh.affils === 2 && zh.eduItems === 3 && !zh.advisorText, JSON.stringify([zh.affils, zh.eduItems, zh.advisorText]));
     check("中文首页：关于里是研究兴趣，不再有旧的那段自我介绍", /研究兴趣：/.test(zh.bioText) && !/关注 AI 如何影响/.test(zh.bioText), zh.bioText.slice(0, 60));
     const en = await inspect("/index.html", 1200, "en");
     check("英文首页：没有 JS 报错", en.errors.length === 0, en.errors.join("; "));
     check("英文首页：html lang=en，按钮显示「中文」且指向 ?lang=zh", en.htmlLang === "en" && en.switchText === "中文" && /lang=zh/.test(en.switchHref), JSON.stringify([en.htmlLang, en.switchText, en.switchHref]));
     check("英文首页：区块标题是英文，且英文版没有多余的英文小标题", JSON.stringify(en.sections) === JSON.stringify(["About", "Publications", "Thinking", "Tools"]), JSON.stringify(en.sections));
     check("英文首页：大标题 Yiheng Lu，下面小字是中文名", /^Yiheng Lu/.test(en.h1) && en.heroEn === "鲁一恒", JSON.stringify([en.h1, en.heroEn]));
-    check("英文首页：导航是英文；单位两行；指导老师是 Advisors:", JSON.stringify(en.navText) === JSON.stringify(["Publications", "Thinking", "Tools"]) && en.affils === 2 && en.advisors.length === 3 && en.advisors.every((x) => /^Advisors:/.test(x)), JSON.stringify([en.navText, en.affils, en.advisors]));
+    check("英文首页：导航是英文；单位两行；三段学历，且不再有 Advisors", JSON.stringify(en.navText) === JSON.stringify(["Publications", "Thinking", "Tools"]) && en.affils === 2 && en.eduItems === 3 && !en.advisorText, JSON.stringify([en.navText, en.affils, en.eduItems, en.advisorText]));
     check("英文首页：论文状态是 Published / Under review", JSON.stringify(en.pubStatuses) === JSON.stringify(["Published", "Under review"]), JSON.stringify(en.pubStatuses));
     check("英文首页：没有横向溢出", !en.overflowX, `文档宽 ${en.scrollWidth}`);
     check("英文首页：标签页标题是英文", /Yiheng Lu | Ph.D./.test(en.title), en.title);

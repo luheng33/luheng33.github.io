@@ -34,7 +34,7 @@
 
 | 想做什么 | 改哪里 |
 |---|---|
-| 改姓名、单位、研究兴趣、教育经历与指导老师、联系方式、照片 | `content/profile.js`（照片放 `assets/images/photo.jpg`，4:5 竖图、几十 KB；**放之前先去掉 EXIF/GPS**，原图留在 `私人笔记/原图/`） |
+| 改姓名、单位、研究兴趣、教育经历、联系方式、照片 | `content/profile.js`（照片放 `assets/images/photo.jpg`，4:5 竖图、几十 KB；**放之前先去掉 EXIF/GPS**，原图留在 `私人笔记/原图/`） |
 | 加/改一个产品 | `content/products.js` |
 | 加/改一篇论文 | `content/publications.js`（`status` 填 `published` 已发表 / `submitted` 在投 / `in-prep` 撰写中；论文页按这三组显示，在投的只放标题和作者） |
 | 写一篇「思考」 | ① `content/thinking.js` 的 `posts` **最前面**加一项；② 新建 `content/posts/<slug>.md` 写正文。还没写完的加 `draft: true`，列表上会显示「写作中」，写完删掉这一行 |

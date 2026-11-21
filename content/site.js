@@ -36,7 +36,6 @@ var SITE = {
     subProducts:     { zh: 'Tools',        en: '' },
 
     education:       { zh: '教育经历', en: 'Education' },
-    advisors:        { zh: '指导老师：', en: 'Advisors: ' },
     viewAll:         { zh: '全部 →',   en: 'All →' },
     loading:         { zh: '加载中…',  en: 'Loading…' },
     backLink:        { zh: '← 回到思考列表', en: '← Back to Thinking' },
